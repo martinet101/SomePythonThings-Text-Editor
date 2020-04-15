@@ -2,7 +2,7 @@ filePath = ''
 from ctypes import windll, pointer, wintypes
 windll.shcore.SetProcessDpiAwareness(1)
 def checkUpdates():
-    actualVersion = 2.0
+    actualVersion = 2.1
     try:
         import struct
         import urllib.request
@@ -155,12 +155,13 @@ def choosefilename():
 def new():
     global text
     global needSaveAs
-    needSaveAs = True
-    text.configure(state='normal')
-    text.delete(1.0, END)
+    if askyesno('Continue?', "You will lose any unsaved change. Do you want to continue?"):
+        needSaveAs = True
+        text.configure(state='normal')
+        text.delete(1.0, END)
 
 def quitAll():
-    if askyesno('Unsaved changes!', 'Do you want to save any unsvaed changes?'):
+    if askyesno('Unsaved changes!', 'Do you want to save any unsaved changes?'):
         save()
     app.destroy()
 
@@ -206,6 +207,37 @@ scrollbarY.pack(side=RIGHT, fill=Y )
 
 text = tk.Text(app, yscrollcommand = scrollbarY.set, border=0)
 text.config(state='normal', font='Consolas 11')
+
+
+def saveFM(event):
+    save()
+def saveAsFM(event):
+    saveas()
+def quitFM(event):
+    quitAll()
+def openFM(event):
+    openfile()
+def newFM(event):
+    new()
+
+def helpFM(event):
+    howtouse()
+
+def copyFM():
+    text.event_generate('<Control-c>')
+def cutFM():
+    text.event_generate('<Control-x>')
+def pasteFM():
+    text.event_generate('<Control-v>')
+
+text.bind("<Control-s>", saveFM)
+text.bind("<Control-Shift-s>", saveAsFM)
+text.bind("<Control-o>", openFM)
+text.bind("<Control-n>", newFM)
+text.bind("<Control-q>", quitFM)
+text.bind("<Control-h>", helpFM)
+
+
 text.pack(side=LEFT, expand=YES, fill=BOTH)
 text.config(height=20, width=100)
 
@@ -214,17 +246,25 @@ scrollbarY.config( command = text.yview )
 
 menubar= Menu(app)
 
+
 filemenu= Menu(menubar, tearoff=0)
-filemenu.add_command(label='Save      ', command=save)
+filemenu.add_command(label='Save        (Ctrl+S)', command=save)
 filemenu.add_command(label='Save As   ', command=saveas)
-filemenu.add_command(label='Open      ', command=openfile)
-filemenu.add_command(label='New       ', command=new)
-filemenu.add_command(label='Quit      ', command=quitAll)
+filemenu.add_command(label='Open      (Ctrl+O)', command=openfile)
+filemenu.add_command(label='New        (Ctrl+N)', command=new)
+filemenu.add_command(label='Quit        (Ctrl+Q)', command=quitAll)
 
 helpmenu= Menu(menubar, tearoff=0)
-helpmenu.add_command(label='How to use', command=howtouse)
+helpmenu.add_command(label='How to use                  (Ctrl+H)', command=howtouse)
 helpmenu.add_command(label='Check for updates', command=checkUpdates)
+
+editmenu= Menu(menubar, tearoff=0)
+editmenu.add_command(label='Cut      (Ctrl+X)', command=cutFM)
+editmenu.add_command(label='Copy   (Ctrl+C)', command=copyFM)
+editmenu.add_command(label='Paste   (Ctrl+V)', command=pasteFM)
+
 menubar.add_cascade(label='File', menu=filemenu)
+menubar.add_cascade(label='Edit', menu=editmenu)
 menubar.add_cascade(label='Help', menu=helpmenu)
 #app.resizable(False, False)
 app.config(menu=menubar)
@@ -238,7 +278,7 @@ import sys
 if len(sys.argv) == 2:
     openfileWithPath(str(sys.argv[1]))
 else:
-    new()
+    needSaveAs = True
 app.protocol( 'WM_DELETE_WINDOW', quitAll)
 text.configure(state='normal')
 app.mainloop()
