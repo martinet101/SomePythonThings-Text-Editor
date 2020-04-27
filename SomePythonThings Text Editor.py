@@ -1,8 +1,9 @@
 filePath = ''
 from ctypes import windll, pointer, wintypes
 windll.shcore.SetProcessDpiAwareness(1)
+actualVersion = 2.1
 def checkUpdates():
-    actualVersion = 2.1
+    global actualVersion 
     try:
         import struct
         import urllib.request
@@ -17,7 +18,7 @@ def checkUpdates():
         showerror("Update Checker", "Unable to reach SomePythonThings servers. Try your internet connection and try again!")
 
 def checkSilentUpdates():
-    actualVersion = 2.0
+    global actualVersion
     if True:
         import struct
         import urllib.request
