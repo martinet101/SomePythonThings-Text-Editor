@@ -31,7 +31,7 @@ def checkSilentUpdates():
 
 def downloadUpdates():
     import webbrowser
-    webbrowser.open_new('https://www.somepythonthings.tk/programs/spttexteditor.html')
+    webbrowser.open_new('https://www.somepythonthings.tk/programs/somepythonthings-text-editor/')
 def rClicker(e):
     ''' right click context menu for all Tk Entry and Text widgets
     '''
