@@ -1,7 +1,8 @@
 filePath = ''
+needSave = False
 from ctypes import windll, pointer, wintypes
 windll.shcore.SetProcessDpiAwareness(1)
-actualVersion = 2.1
+actualVersion = 2.2
 def checkUpdates():
     global actualVersion 
     try:
@@ -81,7 +82,9 @@ def rClickbinder(r):
 def saveas():
     global filePath
     global needSaveAs
-    file = asksaveasfile(defaultextension='.*', filetypes=[("All files", "*.*")])
+    global needSave
+    needSave = False
+    file = asksaveasfile(defaultextension='.*', filetypes=[("All files", "*.*"), ("BAT script", "*.bat"), ("CMD script", "*.cmd"), ("Text file", "*.txt"), ("Python script", "*.py"), ("Javascript script", "*.js")])
     filePath = file.name
     file = open(filePath, 'w')
     try:
@@ -92,6 +95,8 @@ def saveas():
         showerror('Error', 'Error saving file')
 
 def save():
+    global needSave
+    needSave = False
     global needSaveAs
     if needSaveAs == True:
         needSaveAs = False
@@ -107,6 +112,8 @@ def save():
             showerror('Error', 'Error saving file')
     
 def openfile():
+    global needSave
+    needSave = False
     global text
     global filePath
     global needSaveAs
@@ -124,6 +131,8 @@ def openfile():
         showerror('Error', 'Error opening the file.')
     
 def openfileWithPath(path):
+    global needSave
+    needSave = False
     global text
     global filePath
     global needSaveAs
@@ -155,14 +164,17 @@ def choosefilename():
     return filename
 def new():
     global text
+    global needSave
     global needSaveAs
-    if askyesno('Continue?', "You will lose any unsaved change. Do you want to continue?"):
+    if needSave and askyesno('Continue?', "You will lose any unsaved change. Do you want to continue?"):
         needSaveAs = True
+        needSave = False
         text.configure(state='normal')
         text.delete(1.0, END)
 
 def quitAll():
-    if askyesno('Unsaved changes!', 'Do you want to save any unsaved changes?'):
+    global needSave
+    if needSave and askyesno('Unsaved changes!', 'Do you want to save any unsaved changes?'):
         save()
     app.destroy()
 
@@ -175,6 +187,9 @@ def dontSaveAndExit(dialog):
 
 def howtouse():
     info=tk.Tk()
+    try:
+        info.iconbitmap('text.ico')
+    except: pass
     info.configure(background="#FFFFFF")
     info.resizable(False, False)
     info.title('How to use SPT Text Editor')
@@ -188,7 +203,7 @@ def howtouse():
 
 from tkinter import *
 import tkinter as tk
-from tkinter.ttk import *
+from tkinter import ttk
 from tkinter.filedialog import *
 from tkinter.messagebox import *
 filePath = ''
@@ -200,13 +215,13 @@ app.configure(background="#FFFFFF")
 try:
     app.iconbitmap('text.ico')
 except: pass
-scrollbarY = Scrollbar(app)
+scrollbarY = Scrollbar(app, orient='vertical')
 scrollbarY.pack(side=RIGHT, fill=Y )
 
-#scrollbarX = Scrollbar(app, orient='horizontal')
-#scrollbarX.pack(side=BOTTOM, fill=X)
+scrollbarX = Scrollbar(app, orient='horizontal')
+scrollbarX.pack(side=BOTTOM, fill=X)
 
-text = tk.Text(app, yscrollcommand = scrollbarY.set, border=0)
+text = tk.Text(app, yscrollcommand = scrollbarY.set, xscrollcommand = scrollbarX.set, border=0)
 text.config(state='normal', font='Consolas 11')
 
 
@@ -230,6 +245,9 @@ def cutFM():
     text.event_generate('<Control-x>')
 def pasteFM():
     text.event_generate('<Control-v>')
+def needSaveIsTrue(event):
+    global needSave
+    needSave = True
 
 text.bind("<Control-s>", saveFM)
 text.bind("<Control-Shift-s>", saveAsFM)
@@ -237,16 +255,38 @@ text.bind("<Control-o>", openFM)
 text.bind("<Control-n>", newFM)
 text.bind("<Control-q>", quitFM)
 text.bind("<Control-h>", helpFM)
+text.bind("<Key>", needSaveIsTrue)
 
+'''import os
+
+from tkinter import PhotoImage
+iSave = PhotoImage(file="save.png")
+iSaveAs = PhotoImage(file="saveAs.png")
+iOpen = PhotoImage(file="open.png")
+iNew = PhotoImage(file="new.png")
+
+frame = Frame(app)
+frame.pack(expand=False);
+bSave = ttk.Button(frame, image=iSave)
+bSave.grid(row=0, column=0)
+bSaveAs = ttk.Button(frame,image=iSaveAs)
+bSaveAs.grid(row=0, column=1)
+bOpen = ttk.Button(frame,image=iOpen)
+bOpen.grid(row=0, column=2)
+bNew = ttk.Button(frame,image=iNew)
+bNew.grid(row=0, column=3)
+
+buttonBar = ttk.Style()
+buttonBar.configure(Save, background="#FFFFFF", border=0, height=20, width=20)
+bSave.config(style=iSave)'''
 
 text.pack(side=LEFT, expand=YES, fill=BOTH)
-text.config(height=20, width=100)
+text.config(height=20, width=100, wrap=NONE)
 
-#scrollbarX.config( command = text.xview )
+scrollbarX.config( command = text.xview )
 scrollbarY.config( command = text.yview )
 
 menubar= Menu(app)
-
 
 filemenu= Menu(menubar, tearoff=0)
 filemenu.add_command(label='Save        (Ctrl+S)', command=save)
@@ -267,7 +307,6 @@ editmenu.add_command(label='Paste   (Ctrl+V)', command=pasteFM)
 menubar.add_cascade(label='File', menu=filemenu)
 menubar.add_cascade(label='Edit', menu=editmenu)
 menubar.add_cascade(label='Help', menu=helpmenu)
-#app.resizable(False, False)
 app.config(menu=menubar)
 menubar.config(bg='#121212', fg='#bbbbbb')
 
