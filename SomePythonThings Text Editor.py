@@ -104,12 +104,13 @@ def save():
     else:
         global filePath
         try:
-            file = open(filePath, 'w')
+            print(filePath)
+            file = open(str(filePath).replace('\\\\','\\'), 'w')
             file.write(text.get(1.0, END))
             file.close()
         except:
-            file.close()
             showerror('Error', 'Error saving file')
+            file.close()
     
 def openfile():
     global needSave
@@ -126,6 +127,7 @@ def openfile():
         text.delete(1.0, END)
         text.insert(1.0, file.read())
         file.close()
+        save()
     except:
         file.close()
         showerror('Error', 'Error opening the file.')
@@ -145,14 +147,12 @@ def openfileWithPath(path):
         text.delete(1.0, END)
         text.insert(1.0, file.read())
         file.close()
+        save()
+        needSave = False
     except:
+        needSave = True
         file.close()
         showerror('Error', 'Error opening the file.')
-    try:
-        filePath = open(path, 'w')
-        needSaveAs=False
-    except:
-        needSaveAs=True
 def closefilename():
     global filenamecheck
     
