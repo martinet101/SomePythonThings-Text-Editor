@@ -1,7 +1,10 @@
 filePath = ''
 needSave = False
-from ctypes import windll, pointer, wintypes
-windll.shcore.SetProcessDpiAwareness(1)
+try:
+    from ctypes import windll, pointer, wintypes
+    windll.shcore.SetProcessDpiAwareness(1)
+except:
+    pass
 actualVersion = 2.2
 def checkUpdates():
     global actualVersion 
@@ -84,7 +87,7 @@ def saveas():
     global needSaveAs
     global needSave
     needSave = False
-    file = asksaveasfile(defaultextension='.*', filetypes=[("All files", "*.*"), ("BAT script", "*.bat"), ("CMD script", "*.cmd"), ("Text file", "*.txt"), ("Python script", "*.py"), ("Javascript script", "*.js")])
+    file = asksaveasfile(defaultextension='.*', filetypes=[("All files", "*.*"), ("BAT script (.bat)", "*.bat"), ("CMD script (.cmd)", "*.cmd"), ("Text file (.txt)", "*.txt"), ("Python script (.py)", "*.py"), ("Shell script (.sh)", "*.sh"), ('macOS script (.command)', '*.command')])
     filePath = file.name
     file = open(filePath, 'w')
     try:
