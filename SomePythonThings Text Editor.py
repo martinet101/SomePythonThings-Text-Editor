@@ -5,40 +5,39 @@ try:
     windll.shcore.SetProcessDpiAwareness(1)
 except:
     pass
-actualVersion = 2.2
+actualVersion = 2.3
+########################################################
 def checkUpdates():
     global actualVersion 
     try:
         import struct
         import urllib.request
-        response = urllib.request.urlopen("http://www.somepythonthings.tk/versions/windows/text.html")
+        response = urllib.request.urlopen("http://www.somepythonthings.tk/versions/text.html")
         response = response.read().decode("utf8")
         if float(response)>actualVersion:
-            if askyesno("New version available!","Do you want to go to download it?\nNew version: "+str(response)+"\nActual Version: "+str(actualVersion)) == True:
+            if askyesno("Version "+str(float(response))+' available!', "We found an update for SomePythonThings Text Editor!\nDo you want to go to the web to download it?\nNew version: "+str(response)+"\nActual Version: "+str(actualVersion)) == True:
                 downloadUpdates()
         else:
-            showinfo('Update Checker', "You have installed the last version (v"+str(actualVersion)+")")
+            showinfo('Update Checker', "You have installed the lastest version (v"+str(actualVersion)+")")
     except:
-        showerror("Update Checker", "Unable to reach SomePythonThings servers. Try your internet connection and try again!")
-
+        showerror("Update Checker", "Unable to reach SomePythonThings servers. Check your internet connection and try again!")
+########################################################
 def checkSilentUpdates():
     global actualVersion
     if True:
         import struct
         import urllib.request
-        response = urllib.request.urlopen("http://www.somepythonthings.tk/versions/windows/text.html")
+        response = urllib.request.urlopen("http://www.somepythonthings.tk/versions/text.html")
         response = response.read().decode("utf8")
         if float(response)>actualVersion:
-            if askyesno("New version available!","Do you want to go to download it?\nNew version: "+str(response)+"\nActual Version: "+str(actualVersion)) == True:
+            if askyesno("Version "+str(float(response))+' available!', "We found an update for SomePythonThings Text Editor!\nDo you want to go to the web to download it?\nNew version: "+str(response)+"\nActual Version: "+str(actualVersion)) == True:
                 downloadUpdates()
-
+########################################################
 def downloadUpdates():
     import webbrowser
     webbrowser.open_new('https://www.somepythonthings.tk/programs/somepythonthings-text-editor/')
+########################################################
 def rClicker(e):
-    ''' right click context menu for all Tk Entry and Text widgets
-    '''
-
     try:
         def rClick_Copy(e, apnd=0):
             e.widget.event_generate('<Control-c>')
@@ -48,55 +47,47 @@ def rClicker(e):
 
         def rClick_Paste(e):
             e.widget.event_generate('<Control-v>')
-
         e.widget.focus()
-
         nclst=[
                (' Cut      (Ctrl+C)', lambda e=e: rClick_Cut(e)),
                (' Copy   (Ctrl+X)', lambda e=e: rClick_Copy(e)),
                (' Paste   (Ctrl+V)', lambda e=e: rClick_Paste(e)),
                ]
-
         rmenu = Menu(None, tearoff=0, takefocus=0)
-
         for (txt, cmd) in nclst:
             rmenu.add_command(label=txt, command=cmd)
-
         rmenu.tk_popup(e.x_root+40, e.y_root+10,entry="0")
-
     except TclError:
-        print(' - rClick menu, something wrong')
         pass
-
     return "break"
-
-
+########################################################
 def rClickbinder(r):
-
     try:
-        for b in [ 'Text', 'Entry', 'Listbox', 'Label']: #
-            r.bind_class(b, sequence='<Button-3>',
-                         func=rClicker, add='')
+        for b in [ 'Text', 'Entry', 'Listbox', 'Label']:
+            r.bind_class(b, sequence='<Button-3>', func=rClicker, add='')
     except TclError:
-        print(' - rClickbinder, something wrong')
         pass
-
-
+########################################################
 def saveas():
     global filePath
     global needSaveAs
     global needSave
     needSave = False
-    file = asksaveasfile(defaultextension='.*', filetypes=[("All files", "*.*"), ("BAT script (.bat)", "*.bat"), ("CMD script (.cmd)", "*.cmd"), ("Text file (.txt)", "*.txt"), ("Python script (.py)", "*.py"), ("Shell script (.sh)", "*.sh"), ('macOS script (.command)', '*.command')])
-    filePath = file.name
-    file = open(filePath, 'w')
     try:
-        file.write(text.get(1.0, END))
-        file.close()
-    except:
-        file.close()
-        showerror('Error', 'Error saving file')
-
+        file = asksaveasfile(defaultextension='*.*', filetypes=[("All files", "*.*"), ("BAT script (*.bat)", ".bat"), ("CMD script (.cmd)", "*.cmd"), ("Text file (.txt)", "*.txt"), ("Python script (.py)", "*.py"), ("Shell script (.sh)", "*.sh"), ('macOS script (.command)', '*.command')])
+        if not(file==None):
+            try:
+                filePath = file.name
+                file = open(filePath, 'w')
+                file.write(text.get(1.0, END))
+                file.close()
+            except:
+                try:
+                    file.close()
+                except: pass
+                showerror('Error', 'Error saving file')
+    except: pass
+########################################################
 def save():
     global needSave
     needSave = False
@@ -107,14 +98,15 @@ def save():
     else:
         global filePath
         try:
-            print(filePath)
             file = open(str(filePath).replace('\\\\','\\'), 'w')
             file.write(text.get(1.0, END))
             file.close()
         except:
             showerror('Error', 'Error saving file')
-            file.close()
-    
+            try:
+                file.close()
+            except: pass
+########################################################
 def openfile():
     global needSave
     needSave = False
@@ -124,70 +116,88 @@ def openfile():
     needSaveAs = False
     try:
         file = askopenfile(defaultextension='.*', filetypes=[("All files", "*.*")])
-        filePath = file.name
-    except: pass
-    try:
-        text.delete(1.0, END)
-        text.insert(1.0, file.read())
-        file.close()
-        save()
+        if not(file==None):
+            try:
+                filePath = file.name
+                text.delete(1.0, END)
+                text.insert(1.0, file.read())
+                file.close()
+                save()
+            except:
+                try:
+                    file.close()
+                except: pass
+                showerror('Error', 'Error opening the file.')
     except:
-        file.close()
-        showerror('Error', 'Error opening the file.')
-    
+        pass
+########################################################
 def openfileWithPath(path):
     global needSave
     needSave = False
     global text
     global filePath
     global needSaveAs
-    needSaveAs = False
     try:
         file = open(path, 'r')
         filePath = path
-    except: pass
-    try:
         text.delete(1.0, END)
         text.insert(1.0, file.read())
         file.close()
         save()
         needSave = False
+        needSaveAs = False
     except:
         needSave = True
-        file.close()
+        needSaveAs = False
+        try:
+            file.close()
+        except: pass
         showerror('Error', 'Error opening the file.')
+########################################################
 def closefilename():
     global filenamecheck
-    
+########################################################
 def choosefilename():
     global filename
     if filename == '':
         if '.' not in filename:
             filename += '.txt'
     return filename
+########################################################
 def new():
     global text
     global needSave
     global needSaveAs
-    if needSave and askyesno('Continue?', "You will lose any unsaved change. Do you want to continue?"):
+    if needSave and askyesno('Continue?', "You will lose any unsaved changes. Do you want to continue?"):
         needSaveAs = True
         needSave = False
         text.configure(state='normal')
         text.delete(1.0, END)
-
+########################################################
 def quitAll():
     global needSave
-    if needSave and askyesno('Unsaved changes!', 'Do you want to save any unsaved changes?'):
-        save()
-    app.destroy()
-
+    if needSave:
+        action = askyesnocancel('Unsaved changes!', 'Do you want to save any unsaved changes?')
+    else:
+        action = False
+    if needSave and (True == action):
+        try:
+            save()
+        except:
+            pass
+        app.destroy()
+    elif str(action) == 'None':
+        print()
+    elif not(needSave) or (False == action):
+        app.destroy()
+########################################################
 def saveAndExit(dialog):
     save()
     dialog.destroy()
-
+########################################################
 def dontSaveAndExit(dialog):
     dialog.destroy()
-
+########################################################
 def howtouse():
     info=tk.Tk()
     try:
@@ -201,9 +211,7 @@ def howtouse():
     infotext.insert(1.0, '\nSomePythonThings Text Editor\n\nHow to use:\n  To save:\n    1. Click on "File" menu, and then on "Save as"\n  To create a new file:\n    1. Click on "File" menu, and then on "New". The old file is going to be lost if it was not             saved.\n  To quit the program:\n    1. Click on "File" menu, and then on "Quit". The old file is going to be saved automatically           before quitting.\n\n - To view this info again, click on "Help" menu and on the "How to use" entry.\nAll copyrights to SomePythonThings. 2020.\n https://www.somepythonthings.tk')
     infotext.configure(state='disabled')
     infotext.pack()
-
-
-
+########################################################
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
@@ -224,7 +232,7 @@ scrollbarY.pack(side=RIGHT, fill=Y )
 scrollbarX = Scrollbar(app, orient='horizontal')
 scrollbarX.pack(side=BOTTOM, fill=X)
 
-text = tk.Text(app, yscrollcommand = scrollbarY.set, xscrollcommand = scrollbarX.set, border=0)
+text = tk.Text(app,highlightthickness=0, yscrollcommand = scrollbarY.set, xscrollcommand = scrollbarX.set, border=0)
 text.config(state='normal', font='Consolas 11')
 
 
@@ -259,29 +267,6 @@ text.bind("<Control-n>", newFM)
 text.bind("<Control-q>", quitFM)
 text.bind("<Control-h>", helpFM)
 text.bind("<Key>", needSaveIsTrue)
-
-'''import os
-
-from tkinter import PhotoImage
-iSave = PhotoImage(file="save.png")
-iSaveAs = PhotoImage(file="saveAs.png")
-iOpen = PhotoImage(file="open.png")
-iNew = PhotoImage(file="new.png")
-
-frame = Frame(app)
-frame.pack(expand=False);
-bSave = ttk.Button(frame, image=iSave)
-bSave.grid(row=0, column=0)
-bSaveAs = ttk.Button(frame,image=iSaveAs)
-bSaveAs.grid(row=0, column=1)
-bOpen = ttk.Button(frame,image=iOpen)
-bOpen.grid(row=0, column=2)
-bNew = ttk.Button(frame,image=iNew)
-bNew.grid(row=0, column=3)
-
-buttonBar = ttk.Style()
-buttonBar.configure(Save, background="#FFFFFF", border=0, height=20, width=20)
-bSave.config(style=iSave)'''
 
 text.pack(side=LEFT, expand=YES, fill=BOTH)
 text.config(height=20, width=100, wrap=NONE)
